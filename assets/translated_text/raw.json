@@ -1,0 +1,269 @@
+[
+  {
+    "message": "姐姐x天堂"
+  },
+  {
+    "message": "姐姐x天堂"
+  },
+  {
+    "message": "即将结束。是否确认？"
+  },
+  {
+    "message": "将初始化CG完成率。是否确认？"
+  },
+  {
+    "message": "已初始化CG完成率。"
+  },
+  {
+    "message": "未找到存档文件！"
+  },
+  {
+    "message": "检测到未定义指令。"
+  },
+  {
+    "message": "数据已保存。\n\n※加载此数据时请按“L”键。"
+  },
+  {
+    "message": "数据已加载。"
+  },
+  {
+    "message": "是否保存至Data 01？"
+  },
+  {
+    "message": "已保存至Data 01。"
+  },
+  {
+    "message": "是否加载Data 01？"
+  },
+  {
+    "message": "已加载Data 01。"
+  },
+  {
+    "message": "是否保存至Data 02？"
+  },
+  {
+    "message": "已保存至Data 02。"
+  },
+  {
+    "message": "是否加载Data 02？"
+  },
+  {
+    "message": "已加载Data 02。"
+  },
+  {
+    "message": "是否保存至Data 03？"
+  },
+  {
+    "message": "已保存至Data 03。"
+  },
+  {
+    "message": "是否加载Data 03？"
+  },
+  {
+    "message": "已加载Data 03。"
+  },
+  {
+    "message": "是否保存至Data 04？"
+  },
+  {
+    "message": "已保存至Data 04。"
+  },
+  {
+    "message": "是否加载Data 04？"
+  },
+  {
+    "message": "已加载Data 04。"
+  },
+  {
+    "message": "是否保存至Data 05？"
+  },
+  {
+    "message": "已保存至Data 05。"
+  },
+  {
+    "message": "是否加载Data 05？"
+  },
+  {
+    "message": "已加载Data 05。"
+  },
+  {
+    "message": "是否保存至Data 06？"
+  },
+  {
+    "message": "已保存至Data 06。"
+  },
+  {
+    "message": "是否加载Data 06？"
+  },
+  {
+    "message": "已加载Data 06。"
+  },
+  {
+    "message": "是否保存至Data 07？"
+  },
+  {
+    "message": "已保存至Data 07。"
+  },
+  {
+    "message": "是否加载Data 07？"
+  },
+  {
+    "message": "已加载Data 07。"
+  },
+  {
+    "message": "是否保存至Data 08？"
+  },
+  {
+    "message": "已保存至Data 08。"
+  },
+  {
+    "message": "是否加载Data 08？"
+  },
+  {
+    "message": "已加载Data 08。"
+  },
+  {
+    "message": "是否保存至Data 09？"
+  },
+  {
+    "message": "已保存至Data 09。"
+  },
+  {
+    "message": "是否加载Data 09？"
+  },
+  {
+    "message": "已加载Data 09。"
+  },
+  {
+    "message": "是否保存至Data 10？"
+  },
+  {
+    "message": "已保存至Data 10。"
+  },
+  {
+    "message": "是否加载Data 10？"
+  },
+  {
+    "message": "已加载Data 10。"
+  },
+  {
+    "message": "是否保存至Data 11？"
+  },
+  {
+    "message": "已保存至Data 11。"
+  },
+  {
+    "message": "是否加载Data 11？"
+  },
+  {
+    "message": "已加载Data 11。"
+  },
+  {
+    "message": "是否保存至Data 12？"
+  },
+  {
+    "message": "已保存至Data 12。"
+  },
+  {
+    "message": "是否加载Data 12？"
+  },
+  {
+    "message": "已加载Data 12。"
+  },
+  {
+    "message": "是否保存至Data 13？"
+  },
+  {
+    "message": "已保存至Data 13。"
+  },
+  {
+    "message": "是否加载Data 13？"
+  },
+  {
+    "message": "已加载Data 13。"
+  },
+  {
+    "message": "是否保存至Data 14？"
+  },
+  {
+    "message": "已保存至Data 14。"
+  },
+  {
+    "message": "是否加载Data 14？"
+  },
+  {
+    "message": "已加载Data 14。"
+  },
+  {
+    "message": "是否保存至Data 15？"
+  },
+  {
+    "message": "已保存至Data 15。"
+  },
+  {
+    "message": "是否加载Data 15？"
+  },
+  {
+    "message": "已加载Data 15。"
+  },
+  {
+    "message": "是否保存至Data 16？"
+  },
+  {
+    "message": "已保存至Data 16。"
+  },
+  {
+    "message": "是否加载Data 16？"
+  },
+  {
+    "message": "已加载Data 16。"
+  },
+  {
+    "message": "是否保存至Data 17？"
+  },
+  {
+    "message": "已保存至Data 17。"
+  },
+  {
+    "message": "是否加载Data 17？"
+  },
+  {
+    "message": "已加载Data 17。"
+  },
+  {
+    "message": "是否保存至Data 18？"
+  },
+  {
+    "message": "已保存至Data 18。"
+  },
+  {
+    "message": "是否加载Data 18？"
+  },
+  {
+    "message": "已加载Data 18。"
+  },
+  {
+    "message": "是否保存至Data 19？"
+  },
+  {
+    "message": "已保存至Data 19。"
+  },
+  {
+    "message": "是否加载Data 19？"
+  },
+  {
+    "message": "已加载Data 19。"
+  },
+  {
+    "message": "是否保存至Data 20？"
+  },
+  {
+    "message": "已保存至Data 20。"
+  },
+  {
+    "message": "是否加载Data 20？"
+  },
+  {
+    "message": "已加载Data 20。"
+  }
+]
