@@ -24,6 +24,7 @@ config = {
     # "HIJACKED_DLL_PATH": "some_path/your_dll.dll",
     # "REDIRECTION_SRC_PATH": "B.FL4",
     # "REDIRECTION_TARGET_PATH": "FLOWERS_CHS.FL4",
+    "RESOURCE_PACK_NAME": "text_hook_resource_pack_AXH_chs",
 }
 
 hook_lists = {
@@ -70,8 +71,9 @@ def replace():
     translate_lib.copy_path(
         "translated", "generated/translated", overwrite=True)
 
+    Path("generated/resource_pack").mkdir(parents=True, exist_ok=True)
     translate_lib.system(
-        f"{PACKER} pack -i generated/translated -o generated/dist/MPXchs")
+        f"{PACKER} pack -i generated/translated -o generated/resource_pack/MPXchs")
 
     translate_lib.copy_path(
         "assets/raw_text", "generated/raw_text", overwrite=True)
@@ -89,7 +91,7 @@ def replace():
     # x64dbg_1337_patch,apply_1337_patch_on_attach,create_file_redirect
     # text_out_arg_c_is_bytes,iat_hook
     translate_lib.TextHookBuilder(
-        os.environ["TEXT_HOOK_PROJECT_PATH"]).build("complets,iat_hook,text_patch,override_window_title", panic="immediate-abort")
+        os.environ["TEXT_HOOK_PROJECT_PATH"]).build("complets,iat_hook,text_patch,override_window_title,resource_pack", panic="immediate-abort")
 
 
 def main():

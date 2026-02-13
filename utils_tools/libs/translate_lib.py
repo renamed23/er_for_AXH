@@ -347,7 +347,8 @@ class TextHookBuilder:
                 print(f"{dir_name} 目录不存在或为空: {current_dir}")
 
         # 处理 raw 和 translated 目录
-        patch_dirs = ["raw", "translated", "raw_text", "translated_text"]
+        patch_dirs = ["raw", "translated", "raw_text",
+                      "translated_text", "resource_pack"]
         for dir_name in patch_dirs:
             current_dir = self.generated_dir / dir_name
             target_dir = self.assets_dir / dir_name
