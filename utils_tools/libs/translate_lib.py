@@ -3,13 +3,13 @@
 import argparse
 import glob
 import json
-from pathlib import Path
+import os
 import re
 import shutil
 import struct
 import subprocess
 import sys
-import os
+from pathlib import Path
 from typing import Any, Literal, Tuple
 
 # ----------------------------------- 实用工具 ----------------------------------------
@@ -39,7 +39,7 @@ def system(command, check=True, capture_output=False, timeout=None, **kwargs):
             capture_output=capture_output,
             text=True,
             timeout=timeout,
-            **kwargs
+            **kwargs,
         )
 
         if capture_output:
@@ -154,6 +154,7 @@ def change_file_extensions(directory, old_extension, new_extension, overwrite=Fa
 
 def create_cli(extract_func, replace_func, description="CLI 工具", prog_name=None):
     """创建一个具有 extract 和 replace 子命令的 CLI"""
+
     def main():
         parser = argparse.ArgumentParser(
             description=description, prog=prog_name)
@@ -166,7 +167,7 @@ def create_cli(extract_func, replace_func, description="CLI 工具", prog_name=N
 
         args = parser.parse_args()
 
-        if not hasattr(args, 'func'):
+        if not hasattr(args, "func"):
             parser.print_help()
             sys.exit(1)
 
@@ -199,7 +200,8 @@ def copy_path(source, destination, overwrite=False):
     if dest_path.exists():
         if not overwrite:
             raise FileExistsError(
-                f"目标路径 '{dest_path}' 已存在，跳过复制（overwrite=False）")
+                f"目标路径 '{dest_path}' 已存在，跳过复制（overwrite=False）"
+            )
         else:
             # 如果目标存在且需要覆盖，先删除目标
             if dest_path.is_file():
@@ -327,6 +329,12 @@ class TextHookBuilder:
         # 确保 assets 目录存在
         self.assets_dir.mkdir(parents=True, exist_ok=True)
 
+        # 检查并删除 assets 中的 dist 目录（如果存在）
+        assets_dist = self.assets_dir / "dist"
+        if assets_dist.exists():
+            shutil.rmtree(assets_dist)
+            print(f"已删除 assets 中的 dist 目录: {assets_dist}")
+
         # 处理 font 和 hijacked 目录
         asset_dirs = ["font", "hijacked", "x64dbg_1337_patch"]
         for dir_name in asset_dirs:
@@ -360,14 +368,19 @@ class TextHookBuilder:
 
             # 复制当前工作目录的目录
             if current_dir.exists():
-                copy_path(str(current_dir), str(
-                    target_dir), overwrite=True)
+                copy_path(str(current_dir), str(target_dir), overwrite=True)
             else:
                 print(f"源 {dir_name} 目录不存在: {current_dir}，忽略")
 
         # 处理配置文件
-        config_files = ["mapping.json", "translated.json", "raw.json",
-                        "config.json", "hook_lists.json", "sjis_ext.bin"]
+        config_files = [
+            "mapping.json",
+            "translated.json",
+            "raw.json",
+            "config.json",
+            "hook_lists.json",
+            "sjis_ext.bin",
+        ]
         for filename in config_files:
             src_file = self.generated_dir / filename
             if src_file.exists():
@@ -379,25 +392,29 @@ class TextHookBuilder:
         构建 DLL 文件
 
         参数:
-            features (str): cargo build 的 features 参数
+            features (List[str]): cargo build 的 features 参数
             panic (str): "unwind", "abort", "immediate-abort"（默认 "unwind"）
             clean (bool): 是否在构建前执行 `cargo clean`（默认 False）
         """
         # 验证 panic 参数
         if panic not in ("unwind", "abort", "immediate-abort"):
             raise ValueError(
-                "panic 参数必须是 'unwind', 'abort', 'immediate-abort' 其中之一")
+                "panic 参数必须是 'unwind', 'abort', 'immediate-abort' 其中之一"
+            )
 
         # 确保 dist 目录存在
         self.dist_dir.mkdir(parents=True, exist_ok=True)
 
         # 判断是否为 immediate-abort 模式
-        is_immediate_abort = (panic == "immediate-abort")
+        is_immediate_abort = panic == "immediate-abort"
 
         # 根据模式构建不同的命令和 RUSTFLAGS
+        features = ",".join(features)
         if is_immediate_abort:
             # immediate-abort 需要 nightly 工具链和 unstable 选项
-            build_command = f"cargo +nightly build --release --features {features} -Z build-std"
+            build_command = (
+                f"cargo +nightly build --release --features {features} -Z build-std"
+            )
             rustflags = "-C panic=immediate-abort -Z unstable-options"
             print(f"使用 Nightly 工具链编译 (immediate-abort 模式)")
         else:
@@ -423,8 +440,13 @@ class TextHookBuilder:
         system(build_command, cwd=str(crate_dir))
 
         # 复制生成的 DLL 文件
-        source_dll = self.project_path / "target" / \
-            "i686-pc-windows-msvc" / "release" / "text_hook.dll"
+        source_dll = (
+            self.project_path
+            / "target"
+            / "i686-pc-windows-msvc"
+            / "release"
+            / "text_hook.dll"
+        )
         if not source_dll.exists():
             raise FileNotFoundError("找不到生成的 DLL 文件")
 
@@ -449,10 +471,20 @@ class TextHookBuilder:
                 # 使用现有的 rename_file 函数重命名 DLL 文件
                 rename_file(str(dest_dll), new_dll_name, overwrite=True)
             else:
-                print(f"警告: hijacked 目录包含 {len(hijacked_files)} 个文件，但预期只有1个文件")
+                print(
+                    f"警告: hijacked 目录包含 {len(hijacked_files)} 个文件，但预期只有1个文件"
+                )
                 print("跳过 DLL 重命名")
         else:
             print(f"hijacked 目录不存在或为空: {hijacked_dir}")
+
+        # 检查 assets 中是否有 dist 目录，有则合并到 dist_dir
+        assets_dist = self.assets_dir / "dist"
+        if assets_dist.exists():
+            print(f"检测到 assets 中的 dist 目录，合并到: {self.dist_dir}")
+            merge_directories(str(assets_dist), str(
+                self.dist_dir), overwrite=True)
+            print("合并完成")
 
         print(f"DLL 构建并复制成功: {dest_dll}")
 
@@ -461,7 +493,7 @@ class TextHookBuilder:
         完整的构建流程
 
         参数:
-            features (str): cargo build 的 features 参数
+            features (List[str]): cargo build 的 features 参数
             panic (str): "unwind", "abort", "immediate-abort"（默认 "unwind"）
             clean (bool): 是否在构建前执行 `cargo clean`（默认 False）
         """
@@ -499,7 +531,7 @@ def json_process(mode, file_path):
     print(f"模式: {mode}, 文件: {file_path}")
 
     # 构建命令
-    command = f"python utils_tools/json_processor.py {mode} \"{file_path}\""
+    command = f'python utils_tools/json_processor.py {mode} "{file_path}"'
 
     # 执行命令
     system(command)
@@ -538,10 +570,10 @@ def replace(encoding="CP932", exclude_raw=False, exclude_message=None):
 
     if exclude_message is not None:
         print("生成排除消息文件...")
-        os.makedirs('generated', exist_ok=True)
+        os.makedirs("generated", exist_ok=True)
 
         # 写入JSON文件
-        with open('generated/excluded.json', 'w', encoding='utf-8') as f:
+        with open("generated/excluded.json", "w", encoding="utf-8") as f:
             json.dump([{"message": exclude_message}],
                       f, ensure_ascii=False, indent=2)
 
@@ -557,7 +589,7 @@ def replace(encoding="CP932", exclude_raw=False, exclude_message=None):
 
     # 步骤2: 应用替换映射
     print("应用替换映射...")
-    command2 = 'python ./utils_tools/replacement_tool.py map --path generated/translated.json --output generated --replacement-pool generated/replacement_pool.json'
+    command2 = "python ./utils_tools/replacement_tool.py map --path generated/translated.json --output generated --replacement-pool generated/replacement_pool.json"
     system(command2)
     print("替换映射应用完成")
 
@@ -601,11 +633,16 @@ def generate_json(config: dict, filename: str = "config.json"):
 
     print(f"生成 {filename}...")
 
-    with open(f"generated/{filename}", 'w', encoding='utf-8') as f:
+    with open(f"generated/{filename}", "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2, ensure_ascii=False)
 
 
-def auto_padding(pattern_bytes, fallback_byte=None, raw_dir="generated/raw", translated_dir="generated/translated"):
+def auto_padding(
+    pattern_bytes,
+    fallback_byte=None,
+    raw_dir="generated/raw",
+    translated_dir="generated/translated",
+):
     """
     自动进行文件填充
 
@@ -618,11 +655,13 @@ def auto_padding(pattern_bytes, fallback_byte=None, raw_dir="generated/raw", tra
     print("开始自动进行文件填充...")
 
     # 构建命令
-    command = f"python utils_tools/padding.py {raw_dir} {translated_dir} \"{pattern_bytes}\""
+    command = (
+        f'python utils_tools/padding.py {raw_dir} {translated_dir} "{pattern_bytes}"'
+    )
 
     # 如果提供了备用字节，添加到命令中
     if fallback_byte is not None:
-        command += f" \"{fallback_byte}\""
+        command += f' "{fallback_byte}"'
 
     # 执行命令
     system(command)
@@ -643,15 +682,15 @@ def extract_and_concat(er: list[tuple[str, str]], e_fn_before=None, e_fn_after=N
         system(e)
         if e_fn_after != None:
             e_fn_after(i)
-        with open('raw.json', 'r', encoding='utf-8') as f:
+        with open("raw.json", "r", encoding="utf-8") as f:
             raw = json.load(f)
         idx += len(raw)
         split_idx_list.append(idx)
         results.extend(raw)
 
-    with open('raw.json', 'w', encoding='utf-8') as f:
+    with open("raw.json", "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2, ensure_ascii=False)
-    with open('splits.json', 'w', encoding='utf-8') as f:
+    with open("splits.json", "w", encoding="utf-8") as f:
         json.dump(split_idx_list, f, indent=2, ensure_ascii=False)
 
 
@@ -661,17 +700,17 @@ def split_and_replace(er: list[tuple[str, str]], r_fn_before=None, r_fn_after=No
     若r_fn_before不为None则先调用它，然后调用对应的r命令，若r_fn_after不为None则调用它。
     最后还原generated/translated.json。
     """
-    with open('generated/translated.json', 'r', encoding='utf-8') as f:
+    with open("generated/translated.json", "r", encoding="utf-8") as f:
         results = json.load(f)
-    with open('splits.json', 'r', encoding='utf-8') as f:
+    with open("splits.json", "r", encoding="utf-8") as f:
         split_idx_list = json.load(f)
 
     original_results = results.copy()
 
     idx = 0
     for i, (_, r) in enumerate(er):
-        with open("generated/translated.json", 'w', encoding='utf-8') as f:
-            json.dump(results[idx:split_idx_list[i]],
+        with open("generated/translated.json", "w", encoding="utf-8") as f:
+            json.dump(results[idx: split_idx_list[i]],
                       f, indent=2, ensure_ascii=False)
             idx = split_idx_list[i]
         if r_fn_before != None:
@@ -681,7 +720,7 @@ def split_and_replace(er: list[tuple[str, str]], r_fn_before=None, r_fn_after=No
             r_fn_after(i)
 
     # 还原原来的 generated/translated.json
-    with open("generated/translated.json", 'w', encoding='utf-8') as f:
+    with open("generated/translated.json", "w", encoding="utf-8") as f:
         json.dump(original_results, f, indent=2, ensure_ascii=False)
 
 
@@ -689,17 +728,17 @@ def generate_empty_mapping(code_page=932):
     """
     创建一个空的映射，一般配合`no_text_mapping`使用
     """
-    with open("generated/mapping.json", 'w', encoding='utf-8') as f:
-        json.dump({
-            "code_page": code_page,
-            "mapping": {}
-        }, f, indent=2, ensure_ascii=False)
+    with open("generated/mapping.json", "w", encoding="utf-8") as f:
+        json.dump(
+            {"code_page": code_page, "mapping": {}}, f, indent=2, ensure_ascii=False
+        )
+
 
 # ----------------------------------- ER和PACKER工具 ----------------------------------------
 
 
 def bytes_to_hex_string(data: bytes) -> str:
-    return ' '.join(f'{byte:02X}' for byte in data)
+    return " ".join(f"{byte:02X}" for byte in data)
 
 
 def collect_files(path: str, suffix: str | None = None):
@@ -714,12 +753,16 @@ def collect_files(path: str, suffix: str | None = None):
             if suffix is None or file.lower().endswith(suffix.lower()):
                 target_files.append(file_path)
     # 自然排序按相对路径
-    target_files.sort(key=lambda x: [int(p) if p.isdigit() else p.lower()
-                                     for p in re.split(r'(\d+)', os.path.relpath(x, path))])
+    target_files.sort(
+        key=lambda x: [
+            int(p) if p.isdigit() else p.lower()
+            for p in re.split(r"(\d+)", os.path.relpath(x, path))
+        ]
+    )
     return target_files
 
 
-def read_str_until_null(data: bytes, offset: int, encoding='CP932') -> Tuple[str, int]:
+def read_str_until_null(data: bytes, offset: int, encoding="CP932") -> Tuple[str, int]:
     """读取直到null结尾的字符串，返回(字符串, 新的offset)"""
     end = data.find(0x00, offset)
     if end == -1:
@@ -739,40 +782,40 @@ def read_u16(data: bytes, offset: int) -> Tuple[int, int]:
     """读取2字节无符号整数(小端序)，返回(值, 新的offset)"""
     if offset + 2 > len(data):
         raise ValueError("数据不足，无法读取u16")
-    return struct.unpack('<H', data[offset:offset+2])[0], offset + 2
+    return struct.unpack("<H", data[offset: offset + 2])[0], offset + 2
 
 
 def read_u32(data: bytes, offset: int) -> Tuple[int, int]:
     """读取4字节无符号整数(小端序)，返回(值, 新的offset)"""
     if offset + 4 > len(data):
         raise ValueError("数据不足，无法读取u32")
-    return struct.unpack('<I', data[offset:offset+4])[0], offset + 4
+    return struct.unpack("<I", data[offset: offset + 4])[0], offset + 4
 
 
 def read_i8(data: bytes, offset: int) -> Tuple[int, int]:
     """读取1字节有符号整数，返回(值, 新的offset)"""
     if offset + 1 > len(data):
         raise ValueError("数据不足，无法读取i8")
-    return struct.unpack('<b', data[offset:offset+1])[0], offset + 1
+    return struct.unpack("<b", data[offset: offset + 1])[0], offset + 1
 
 
 def read_i16(data: bytes, offset: int) -> Tuple[int, int]:
     """读取2字节有符号整数(小端序)，返回(值, 新的offset)"""
     if offset + 2 > len(data):
         raise ValueError("数据不足，无法读取i16")
-    return struct.unpack('<h', data[offset:offset+2])[0], offset + 2
+    return struct.unpack("<h", data[offset: offset + 2])[0], offset + 2
 
 
 def read_i32(data: bytes, offset: int) -> Tuple[int, int]:
     """读取4字节有符号整数(小端序)，返回(值, 新的offset)"""
     if offset + 4 > len(data):
         raise ValueError("数据不足，无法读取i32")
-    return struct.unpack('<i', data[offset:offset+4])[0], offset + 4
+    return struct.unpack("<i", data[offset: offset + 4])[0], offset + 4
 
 
 def read_bytes(data: bytes, offset: int, length: int) -> Tuple[bytes, int]:
     """读取固定长度的字节片段，返回(值, 新的offset)"""
-    slice_data = data[offset:offset+length]
+    slice_data = data[offset: offset + length]
     return slice_data, offset + length
 
 
@@ -861,7 +904,8 @@ def se(data, type_str: str) -> str:
         return f"bytes:{bytes_to_hex_string(data)}"
 
     raise ValueError(
-        f"类型不匹配或未知类型: type='{type_str}', data={type(data).__name__}")
+        f"类型不匹配或未知类型: type='{type_str}', data={type(data).__name__}"
+    )
 
 
 def de(data: str) -> Tuple[Any, str]:
@@ -942,7 +986,9 @@ def de(data: str) -> Tuple[Any, str]:
     return data, "str"
 
 
-def str_to_bytes(data: str, byteorder: Literal["little", "big"] = 'little', str_encoding=None) -> bytes:
+def str_to_bytes(
+    data: str, byteorder: Literal["little", "big"] = "little", str_encoding=None
+) -> bytes:
     """
     将序列化字符串转换为字节序列
 
@@ -954,8 +1000,9 @@ def str_to_bytes(data: str, byteorder: Literal["little", "big"] = 'little', str_
     返回:
         字节序列
     """
+
     def encoding_str(data) -> bytes:
-        return data.encode("CP932") + b'\x00'
+        return data.encode("CP932") + b"\x00"
 
     if str_encoding == None:
         str_encoding = encoding_str
