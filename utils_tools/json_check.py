@@ -75,7 +75,7 @@ class JSONChecker:
         self.checks = [
             self.check_special_characters,
             self.check_korean_characters,
-            # self.check_japanese_characters,
+            self.check_japanese_characters,
             self.check_duplicate_quotes,
             # self.check_length_discrepancy,
             # self.check_quote_consistency,
