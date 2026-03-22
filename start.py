@@ -34,19 +34,28 @@ hook_lists = {
     ],
 }
 
-# patch,custom_font,debug_output,debug_text_mapping
-# default_impl,enum_font_families
-# export_default_dll_main,read_file_patch_impl
-# debug_file_impl,emulate_locale,override_window_title
-# dll_hijacking,export_patch_process_fn,text_patch,text_extracting
-# x64dbg_1337_patch,apply_1337_patch_on_attach,create_file_redirect
-# text_out_arg_c_is_bytes,iat_hook,resource_pack,resource_pack_embedding
+# bind_asset_virtualizer, bind_font_manager, bind_lifecycle_guard
+# bind_path_redirector, bind_text_mapping, bind_user_interface_patcher
+# bind_window_title_overrider, disable_forced_font, enable_debug_output
+# assume_text_out_arg_c_is_byte_len, enable_window_title_override
+# enable_text_mapping_debug, enable_x64dbg_1337_patch
+# auto_apply_1337_patch_on_attach, auto_apply_1337_patch_on_hwbp_hit
+# enable_attach_cleanup, enable_overlay_gl, enable_overlay
+# enable_gl_painter, enable_win_event_hook, enable_worker_thread
+# enable_hwbp_from_constants, enable_veh, enable_resource_pack
+# embed_resource_pack, enable_iat_hook, enable_text_patch
+# extract_text, enable_patch, extract_patch, enable_custom_font
+# export_default_dll_main, enable_locale_emulator, enable_delayed_attach
+# enable_dll_hijacking, export_hook_symbols, default_impl
 features = [
     "complets",
-    "iat_hook",
-    "text_patch",
-    "override_window_title",
-    "resource_pack"
+    "bind_text_mapping",
+    "bind_font_manager",
+    "enable_iat_hook",
+    "bind_window_title_overrider",
+    "enable_window_title_override",
+    "bind_asset_virtualizer",
+    "bind_user_interface_patcher"
 ]
 
 PACKER = "python packer.py"
