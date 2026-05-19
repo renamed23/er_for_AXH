@@ -8,15 +8,19 @@ from utils_tools.libs import translate_lib
 config = {
     "FONT_FACE": "SimHei",  # (ＭＳ ゴシック, SimHei, SimSun)
     "CHAR_SET": 134,  # CP932=128, GBK=134
-    "FONT_FILTER": ["ＭＳ ゴシック", "俵俽 僑僔僢僋", "MS Gothic", "", "俵俽僑僔僢僋", "ＭＳゴシック"],
+    "FONT_FILTER": [
+        "ＭＳ ゴシック",
+        "俵俽 僑僔僢僋",
+        "MS Gothic",
+        "",
+        "俵俽僑僔僢僋",
+        "ＭＳゴシック",
+    ],
     # "FONT_FILTER": ["Microsoft YaHei", "Microsoft YaHei UI"],
     "CHAR_FILTER": [
         # 0x40
     ],
-    "ARG_REG_PATH": {
-        "value": "Complets\\AxHv",
-        "type": "&str"
-    },
+    "ARG_REG_PATH": {"value": "Complets\\AxHv", "type": "&str"},
     # "ENUM_FONT_PROC_CHAR_SET": 128,
     # "ENUM_FONT_PROC_PITCH": 1,
     # "ENUM_FONT_PROC_OUT_PRECISION": 3,
@@ -33,6 +37,8 @@ hook_lists = {
         "PropertySheetA",
     ],
 }
+
+vfs_rules = []
 
 # bind_asset_virtualizer, bind_font_manager, bind_lifecycle_guard
 # bind_path_redirector, bind_text_mapping, bind_user_interface_patcher
@@ -54,24 +60,26 @@ features = [
     "enable_iat_hook",
     "bind_window_title_overrider",
     "enable_window_title_override",
-    "bind_asset_virtualizer",
-    "bind_user_interface_patcher"
+    "bind_vfs",
+    "enable_resource_pack",
+    "bind_user_interface_patcher",
 ]
 
 PACKER = "python packer.py"
 
 ER = [
-    ("python er.py extract --path raw --output raw.json",
-     "python er.py replace --path raw --text generated/translated.json")
+    (
+        "python er.py extract --path raw --output raw.json",
+        "python er.py replace --path raw --text generated/translated.json",
+    )
 ]
 
 
 def extract():
     print("执行提取...")
-    translate_lib.system(
-        f"{PACKER} unpack -i MPX -o raw")
+    translate_lib.system(f"{PACKER} unpack -i MPX -o raw")
     translate_lib.extract_and_concat(ER)
-    translate_lib.json_process('e', 'raw.json')
+    translate_lib.json_process("e", "raw.json")
 
 
 def replace():
@@ -81,34 +89,37 @@ def replace():
     # 你的 replace 逻辑
     translate_lib.generate_json(config, "config.json")
     translate_lib.generate_json(hook_lists, "hook_lists.json")
+    translate_lib.generate_json(vfs_rules, "vfs_rules.json")
     translate_lib.copy_path(
-        "translated.json", "generated/translated.json", overwrite=True)
-    translate_lib.copy_path(
-        "raw.json", "generated/raw.json", overwrite=True)
+        "translated.json", "generated/translated.json", overwrite=True
+    )
+    translate_lib.copy_path("raw.json", "generated/raw.json", overwrite=True)
     translate_lib.json_check()
-    translate_lib.json_process('r', 'generated/translated.json')
+    translate_lib.json_process("r", "generated/translated.json")
     translate_lib.ascii_to_fullwidth()
     translate_lib.replace("cp932", False)  # cp932,shift_jis,gbk
 
     translate_lib.split_and_replace(ER)
 
-    translate_lib.copy_path(
-        "translated", "generated/translated", overwrite=True)
+    translate_lib.copy_path("translated", "generated/translated", overwrite=True)
 
     Path("generated/resource_pack").mkdir(parents=True, exist_ok=True)
     translate_lib.system(
-        f"{PACKER} pack -i generated/translated -o generated/resource_pack/MPXchs")
+        f"{PACKER} pack -i generated/translated -o generated/resource_pack/MPXchs"
+    )
 
+    translate_lib.copy_path("assets/raw_text", "generated/raw_text", overwrite=True)
     translate_lib.copy_path(
-        "assets/raw_text", "generated/raw_text", overwrite=True)
-    translate_lib.copy_path(
-        "assets/translated_text", "generated/translated_text", overwrite=True)
+        "assets/translated_text", "generated/translated_text", overwrite=True
+    )
 
     translate_lib.merge_directories(
-        "assets/dist_pass", "generated/dist", overwrite=True)
+        "assets/dist_pass", "generated/dist", overwrite=True
+    )
 
-    translate_lib.TextHookBuilder(
-        os.environ["TEXT_HOOK_PROJECT_PATH"]).build(features, panic="immediate-abort")
+    translate_lib.TextHookBuilder(os.environ["TEXT_HOOK_PROJECT_PATH"]).build(
+        features, panic="immediate-abort"
+    )
 
 
 def main():

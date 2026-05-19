@@ -156,14 +156,11 @@ def create_cli(extract_func, replace_func, description="CLI 工具", prog_name=N
     """创建一个具有 extract 和 replace 子命令的 CLI"""
 
     def main():
-        parser = argparse.ArgumentParser(
-            description=description, prog=prog_name)
+        parser = argparse.ArgumentParser(description=description, prog=prog_name)
         subparsers = parser.add_subparsers(dest="command", help="可用命令")
 
-        subparsers.add_parser(
-            "e", help="执行提取操作").set_defaults(func=extract_func)
-        subparsers.add_parser(
-            "r", help="执行替换操作").set_defaults(func=replace_func)
+        subparsers.add_parser("e", help="执行提取操作").set_defaults(func=extract_func)
+        subparsers.add_parser("r", help="执行替换操作").set_defaults(func=replace_func)
 
         args = parser.parse_args()
 
@@ -355,8 +352,14 @@ class TextHookBuilder:
                 print(f"{dir_name} 目录不存在或为空: {current_dir}")
 
         # 处理 raw 和 translated 目录
-        patch_dirs = ["raw", "translated", "raw_text",
-                      "translated_text", "resource_pack", "misc"]
+        patch_dirs = [
+            "raw",
+            "translated",
+            "raw_text",
+            "translated_text",
+            "resource_pack",
+            "misc",
+        ]
         for dir_name in patch_dirs:
             current_dir = self.generated_dir / dir_name
             target_dir = self.assets_dir / dir_name
@@ -406,12 +409,10 @@ class TextHookBuilder:
         # 1. 架构映射逻辑
         if arch == "x86":
             alias = "build-text-hook"
-            source_dll_rel = Path(
-                "target/i686-pc-windows-msvc/release/text_hook.dll")
+            source_dll_rel = Path("target/i686-pc-windows-msvc/release/text_hook.dll")
         elif arch == "x64":
             alias = "build-text-hook64"
-            source_dll_rel = Path(
-                "target/x86_64-pc-windows-msvc/release/text_hook.dll")
+            source_dll_rel = Path("target/x86_64-pc-windows-msvc/release/text_hook.dll")
         else:
             raise ValueError("arch 参数必须是 'x86' 或 'x64'")
 
@@ -422,7 +423,9 @@ class TextHookBuilder:
         features_joined = ",".join(features)
         if panic == "immediate-abort":
             # immediate-abort 需要 nightly 工具链和 unstable 选项
-            build_command = f"cargo +nightly {alias} --features {features_joined} -Z build-std"
+            build_command = (
+                f"cargo +nightly {alias} --features {features_joined} -Z build-std"
+            )
             rustflags = "-C panic=immediate-abort -Z unstable-options"
             print(f"使用 Nightly 工具链编译 (immediate-abort 模式)")
         else:
@@ -462,7 +465,9 @@ class TextHookBuilder:
                 print(f"将 DLL 重命名为: {new_dll_name}")
                 rename_file(str(dest_dll), new_dll_name, overwrite=True)
             else:
-                print(f"警告: hijacked 目录包含 {len(hijacked_files)} 个文件，但预期只有1个文件")
+                print(
+                    f"警告: hijacked 目录包含 {len(hijacked_files)} 个文件，但预期只有1个文件"
+                )
                 print("跳过 DLL 重命名")
         else:
             print(f"hijacked 目录不存在或为空: {hijacked_dir}")
@@ -471,8 +476,7 @@ class TextHookBuilder:
         assets_dist = self.assets_dir / "dist"
         if assets_dist.exists():
             print(f"检测到 assets 中的 dist 目录，合并到: {self.dist_dir}")
-            merge_directories(str(assets_dist), str(
-                self.dist_dir), overwrite=True)
+            merge_directories(str(assets_dist), str(self.dist_dir), overwrite=True)
             print("合并完成")
 
         print(f"DLL 构建并复制成功: {dest_dll}")
@@ -538,7 +542,9 @@ def ascii_to_fullwidth():
     print("ASCII 到全角字符转换完成")
 
 
-def replace(encoding="CP932", exclude_raw=False, exclude_message=None, filter_rare=False):
+def replace(
+    encoding="CP932", exclude_raw=False, exclude_message=None, filter_rare=False
+):
     """
     执行替换流程：
     1. 根据编码生成替换池
@@ -564,8 +570,7 @@ def replace(encoding="CP932", exclude_raw=False, exclude_message=None, filter_ra
 
         # 写入JSON文件
         with open("generated/excluded.json", "w", encoding="utf-8") as f:
-            json.dump([{"message": exclude_message}],
-                      f, ensure_ascii=False, indent=2)
+            json.dump([{"message": exclude_message}], f, ensure_ascii=False, indent=2)
 
         exclude_paths.append("generated/excluded.json")
         print("排除消息文件生成完成")
@@ -621,7 +626,7 @@ def auto_wrap():
     print("自动进行换行完成")
 
 
-def generate_json(config: dict, filename: str = "config.json"):
+def generate_json(config, filename: str = "config.json"):
     """
     根据字典生成json
     """
@@ -705,8 +710,7 @@ def split_and_replace(er: list[tuple[str, str]], r_fn_before=None, r_fn_after=No
     idx = 0
     for i, (_, r) in enumerate(er):
         with open("generated/translated.json", "w", encoding="utf-8") as f:
-            json.dump(results[idx: split_idx_list[i]],
-                      f, indent=2, ensure_ascii=False)
+            json.dump(results[idx : split_idx_list[i]], f, indent=2, ensure_ascii=False)
             idx = split_idx_list[i]
         if r_fn_before != None:
             r_fn_before(i)
@@ -777,40 +781,40 @@ def read_u16(data: bytes, offset: int) -> Tuple[int, int]:
     """读取2字节无符号整数(小端序)，返回(值, 新的offset)"""
     if offset + 2 > len(data):
         raise ValueError("数据不足，无法读取u16")
-    return struct.unpack("<H", data[offset: offset + 2])[0], offset + 2
+    return struct.unpack("<H", data[offset : offset + 2])[0], offset + 2
 
 
 def read_u32(data: bytes, offset: int) -> Tuple[int, int]:
     """读取4字节无符号整数(小端序)，返回(值, 新的offset)"""
     if offset + 4 > len(data):
         raise ValueError("数据不足，无法读取u32")
-    return struct.unpack("<I", data[offset: offset + 4])[0], offset + 4
+    return struct.unpack("<I", data[offset : offset + 4])[0], offset + 4
 
 
 def read_i8(data: bytes, offset: int) -> Tuple[int, int]:
     """读取1字节有符号整数，返回(值, 新的offset)"""
     if offset + 1 > len(data):
         raise ValueError("数据不足，无法读取i8")
-    return struct.unpack("<b", data[offset: offset + 1])[0], offset + 1
+    return struct.unpack("<b", data[offset : offset + 1])[0], offset + 1
 
 
 def read_i16(data: bytes, offset: int) -> Tuple[int, int]:
     """读取2字节有符号整数(小端序)，返回(值, 新的offset)"""
     if offset + 2 > len(data):
         raise ValueError("数据不足，无法读取i16")
-    return struct.unpack("<h", data[offset: offset + 2])[0], offset + 2
+    return struct.unpack("<h", data[offset : offset + 2])[0], offset + 2
 
 
 def read_i32(data: bytes, offset: int) -> Tuple[int, int]:
     """读取4字节有符号整数(小端序)，返回(值, 新的offset)"""
     if offset + 4 > len(data):
         raise ValueError("数据不足，无法读取i32")
-    return struct.unpack("<i", data[offset: offset + 4])[0], offset + 4
+    return struct.unpack("<i", data[offset : offset + 4])[0], offset + 4
 
 
 def read_bytes(data: bytes, offset: int, length: int) -> Tuple[bytes, int]:
     """读取固定长度的字节片段，返回(值, 新的offset)"""
-    slice_data = data[offset: offset + length]
+    slice_data = data[offset : offset + length]
     return slice_data, offset + length
 
 
